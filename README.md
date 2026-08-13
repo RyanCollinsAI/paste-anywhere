@@ -1,6 +1,6 @@
 # paste-anywhere
 
-Paste screenshots into any coding agent, doc, or chat.
+Screenshots, pasteable literally anywhere, including agent terminals.
 One snip puts the image, the file, and the path on your clipboard at once.
 
 ## The problem
