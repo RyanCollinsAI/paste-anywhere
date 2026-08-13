@@ -1,4 +1,4 @@
-# clipboard-bridge
+# paste-anywhere
 
 Paste screenshots into any coding agent, doc, or chat.
 One snip puts the image, the file, and the path on your clipboard at once.
@@ -39,8 +39,8 @@ pip install pywin32 Pillow
 Then clone and register:
 
 ```
-git clone https://github.com/RyanCollinsAI/clipboard-bridge.git
-cd clipboard-bridge
+git clone https://github.com/RyanCollinsAI/paste-anywhere.git
+cd paste-anywhere
 powershell -ExecutionPolicy Bypass -File register_task.ps1
 ```
 
@@ -57,7 +57,7 @@ Your saved clips in `Pictures\Clips` stay.
 
 ## Configuration
 
-Set the `CLIPBOARD_BRIDGE_DIR` environment variable to change where clips are saved.
+Set the `PASTE_ANYWHERE_DIR` environment variable to change where clips are saved.
 The default is `Pictures\Clips`.
 
 ## How it works
@@ -76,7 +76,7 @@ py smoke_test.py
 ```
 
 Runs an end-to-end check against a fresh bridge instance: trigger, file validity, loop prevention, and two negative cases.
-Stop the installed task first (`Stop-ScheduledTask ClipboardBridge`), because the test needs to launch its own instance.
+Stop the installed task first (`Stop-ScheduledTask PasteAnywhere`), because the test needs to launch its own instance.
 
 ## License
 

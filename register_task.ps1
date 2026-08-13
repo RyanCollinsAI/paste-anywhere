@@ -1,10 +1,10 @@
 $ErrorActionPreference = "Stop"
 
-$taskName = "ClipboardBridge"
-$scriptPath = Join-Path $PSScriptRoot "clipboard_bridge.py"
+$taskName = "PasteAnywhere"
+$scriptPath = Join-Path $PSScriptRoot "paste_anywhere.py"
 
 if (-not (Test-Path $scriptPath)) {
-    Write-Error "clipboard_bridge.py not found at $scriptPath"
+    Write-Error "paste_anywhere.py not found at $scriptPath"
     exit 1
 }
 

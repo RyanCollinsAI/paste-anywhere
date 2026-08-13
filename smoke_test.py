@@ -10,7 +10,7 @@ import win32con
 from PIL import Image
 
 SCRIPT_DIR = Path(__file__).parent
-BRIDGE_SCRIPT = SCRIPT_DIR / "clipboard_bridge.py"
+BRIDGE_SCRIPT = SCRIPT_DIR / "paste_anywhere.py"
 
 CREATE_NO_WINDOW = 0x08000000
 
@@ -92,7 +92,7 @@ def main():
         sys.exit(1)
 
     try:
-        marker_id = win32clipboard.RegisterClipboardFormat("ClipboardBridgeMarker")
+        marker_id = win32clipboard.RegisterClipboardFormat("PasteAnywhereMarker")
 
         set_test_bitmap()
 

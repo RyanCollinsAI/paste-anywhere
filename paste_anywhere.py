@@ -12,10 +12,10 @@ import win32con
 import win32gui
 from PIL import ImageGrab
 
-MUTEX_NAME = "Global\\ClipboardBridgeMutex"
-MARKER_FORMAT_NAME = "ClipboardBridgeMarker"
+MUTEX_NAME = "Global\\PasteAnywhereMutex"
+MARKER_FORMAT_NAME = "PasteAnywhereMarker"
 MARKER_DATA = b"present"
-CLIPS_DIR = Path(os.environ.get("CLIPBOARD_BRIDGE_DIR", str(Path.home() / "Pictures" / "Clips")))
+CLIPS_DIR = Path(os.environ.get("PASTE_ANYWHERE_DIR", str(Path.home() / "Pictures" / "Clips")))
 STATE_DIR = Path(__file__).parent / "state"
 LOG_FILE = STATE_DIR / "bridge.log"
 LOG_MAX_BYTES = 512 * 1024
@@ -211,12 +211,12 @@ def wndproc(hwnd, msg, wparam, lparam):
 def create_message_window():
     wc = win32gui.WNDCLASS()
     wc.lpfnWndProc = wndproc
-    wc.lpszClassName = "ClipboardBridgeWindowClass"
+    wc.lpszClassName = "PasteAnywhereWindowClass"
     wc.hInstance = win32gui.GetModuleHandle(None)
     class_atom = win32gui.RegisterClass(wc)
     hwnd = win32gui.CreateWindow(
         class_atom,
-        "ClipboardBridge",
+        "PasteAnywhere",
         0,
         0,
         0,
@@ -252,7 +252,7 @@ def main():
             log("main: AddClipboardFormatListener failed")
             return
 
-        log("main: clipboard bridge started")
+        log("main: paste-anywhere started")
         win32gui.PumpMessages()
     except Exception:
         log(f"main: unhandled exception, exiting:\n{traceback.format_exc()}")
