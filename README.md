@@ -60,6 +60,13 @@ Your saved clips in `Pictures\Clips` stay.
 Set the `PASTE_ANYWHERE_DIR` environment variable to change where clips are saved.
 The default is `Pictures\Clips`.
 
+| Variable | Default | Effect |
+|---|---|---|
+| `PASTE_ANYWHERE_DIR` | `Pictures\Clips` | Where clips are saved. |
+| `PASTE_ANYWHERE_MAX_AGE_DAYS` | `30` | Deletes clips older than this many days. The purge runs after a capture, at most once per hour; an idle bridge purges nothing until the next capture. `0` disables. |
+| `PASTE_ANYWHERE_MAX_TOTAL_MB` | `2048` | Deletes the oldest clips once the folder passes this size. Same purge timing as above. `0` disables. |
+| `PASTE_ANYWHERE_MAX_EDGE` | `1568` | Downscales a captured image proportionally if either edge exceeds this many pixels. `0` disables. |
+
 ## How it works
 
 - A hidden window subscribes to `WM_CLIPBOARDUPDATE` via `AddClipboardFormatListener`.
@@ -77,6 +84,12 @@ py smoke_test.py
 
 Runs an end-to-end check against a fresh bridge instance: trigger, file validity, loop prevention, and two negative cases.
 Stop the installed task first (`Stop-ScheduledTask PasteAnywhere`), because the test needs to launch its own instance.
+
+## Maintenance
+
+- `py status.py` (add `--json` for machine-readable output) - reports whether the bridge is running, last capture time, today's capture count, clips folder size, and last error.
+- `powershell -ExecutionPolicy Bypass -File diagnose.ps1` - runs an ordered set of health checks and prints the first failure with its fix, or "all checks pass" plus the status line.
+- `powershell -ExecutionPolicy Bypass -File update.ps1` - pulls the latest code, re-checks dependencies, restarts the task, and prints the new commit hash.
 
 ## License
 
