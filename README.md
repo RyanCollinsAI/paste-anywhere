@@ -3,6 +3,8 @@
 Screenshots, pasteable literally anywhere, including agent terminals.
 One snip puts the image, the file, and the path on your clipboard at once.
 
+![Snip a screenshot, paste it straight into Claude Code](assets/demo.gif)
+
 ## The problem
 
 You press Win+Shift+S, snip a screenshot, and switch to your terminal to show it to Claude Code, Codex, or any other coding agent.
