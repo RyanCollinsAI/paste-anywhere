@@ -46,8 +46,11 @@ cd paste-anywhere
 powershell -ExecutionPolicy Bypass -File register_task.ps1
 ```
 
-This registers a per-user scheduled task that starts now and at each logon, runs hidden under `pythonw.exe`, and restarts itself if it crashes.
+This registers a per-user scheduled task that starts now, at each logon, at each unlock, and each time the machine wakes from sleep.
+It runs hidden under `pythonw.exe` and restarts itself if it crashes.
+A start while the bridge is already running does nothing.
 No admin rights needed.
+If you installed an older version, run `register_task.ps1` again to get the unlock and wake triggers.
 
 ## Uninstall
 
@@ -68,6 +71,15 @@ The default is `Pictures\Clips`.
 | `PASTE_ANYWHERE_MAX_AGE_DAYS` | `30` | Deletes clips older than this many days. The purge runs after a capture, at most once per hour; an idle bridge purges nothing until the next capture. `0` disables. |
 | `PASTE_ANYWHERE_MAX_TOTAL_MB` | `2048` | Deletes the oldest clips once the folder passes this size. Same purge timing as above. `0` disables. |
 | `PASTE_ANYWHERE_MAX_EDGE` | `1568` | Downscales a captured image proportionally if either edge exceeds this many pixels. `0` disables. |
+| `PASTE_ANYWHERE_MIRROR` | unset | An `scp` destination, for example `mybox:Pictures/Clips/`. Each clip is also copied there. Unset disables. |
+
+### Agents on another machine
+
+If you snip on a laptop but your coding agent runs on a remote machine over SSH, the pasted path points at a file the agent cannot see.
+Set `PASTE_ANYWHERE_MIRROR` to the same clips folder on the remote machine, then restart the task.
+When both machines use the same user name, the pasted path is valid on both.
+The copy runs in the background after the clipboard is ready, so a paste is never delayed; the file lands on the remote machine a second or two later.
+It needs key-based SSH (no password prompt), and a failed copy is logged to `state\bridge.log`.
 
 ## How it works
 

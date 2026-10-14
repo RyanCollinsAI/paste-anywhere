@@ -3,6 +3,7 @@ import hashlib
 import io
 import os
 import struct
+import subprocess
 import threading
 import time
 import traceback
@@ -27,6 +28,9 @@ LOG_KEEP_LINES = 100
 MAX_EDGE_DEFAULT = 1568
 MAX_AGE_DAYS_DEFAULT = 30
 MAX_TOTAL_MB_DEFAULT = 2048
+
+MIRROR_DEST = os.environ.get("PASTE_ANYWHERE_MIRROR", "")
+MIRROR_TIMEOUT_SECONDS = 30
 
 marker_format_id = None
 
@@ -194,6 +198,28 @@ def build_hdrop(path_str):
     return header + files_bytes
 
 
+def mirror_clip(path):
+    # CREATE_NO_WINDOW: the bridge runs under pythonw with no console, so a
+    # console child like scp would otherwise pop a visible window.
+    try:
+        result = subprocess.run(
+            ["scp", "-q", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5", str(path), MIRROR_DEST],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            timeout=MIRROR_TIMEOUT_SECONDS,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+    except Exception as e:
+        log(f"mirror_clip: failed to copy {path.name} to {MIRROR_DEST}: {e}")
+        return
+    if result.returncode != 0:
+        err = result.stderr.decode("utf-8", errors="replace").strip()
+        log(f"mirror_clip: failed to copy {path.name} to {MIRROR_DEST}: {err}")
+        return
+    log(f"mirror_clip: copied {path.name} to {MIRROR_DEST}")
+
+
 def open_clipboard_with_retry(hwnd=None, attempts=10, delay=0.1):
     for i in range(attempts):
         try:
@@ -328,6 +354,8 @@ def handle_clip():
 
     if reset_ok:
         _recent_hashes.append(capture_hash)
+        if MIRROR_DEST:
+            threading.Thread(target=mirror_clip, args=(out_path,), daemon=True).start()
         maybe_trim_log()
     else:
         out_path.unlink(missing_ok=True)
@@ -391,6 +419,8 @@ def main():
             return
 
         log("main: paste-anywhere started")
+        if MIRROR_DEST:
+            log(f"main: mirroring clips to {MIRROR_DEST}")
         win32gui.PumpMessages()
     except Exception:
         log(f"main: unhandled exception, exiting:\n{traceback.format_exc()}")

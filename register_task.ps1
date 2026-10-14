@@ -41,12 +41,22 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $action = New-ScheduledTaskAction -Execute $exePath -Argument "`"$scriptPath`""
-$trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+$logonTrigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+
+# The bridge normally survives sleep. If it died while the machine was asleep,
+# nothing would bring it back until the next logon, so also start on unlock and
+# on wake. A start while the bridge is already running is ignored (IgnoreNew).
+# Wake is Power-Troubleshooter 1 (S3 / hibernate) or Kernel-Power 507 (Modern Standby).
+$triggerNs = "Root/Microsoft/Windows/TaskScheduler"
+$unlockTrigger = New-CimInstance -ClientOnly -CimClass (Get-CimClass -Namespace $triggerNs -ClassName MSFT_TaskSessionStateChangeTrigger) -Property @{ StateChange = 8; UserId = $env:USERNAME; Enabled = $true }
+$wakeQuery = "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[Provider[@Name='Microsoft-Windows-Power-Troubleshooter'] and EventID=1]]</Select><Select Path='System'>*[System[Provider[@Name='Microsoft-Windows-Kernel-Power'] and EventID=507]]</Select></Query></QueryList>"
+$wakeTrigger = New-CimInstance -ClientOnly -CimClass (Get-CimClass -Namespace $triggerNs -ClassName MSFT_TaskEventTrigger) -Property @{ Subscription = $wakeQuery; Enabled = $true }
+$trigger = @($logonTrigger, $unlockTrigger, $wakeTrigger)
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
 $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
 
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description "Watches the clipboard for screenshots and re-publishes them as image + file + path" -Force | Out-Null
 Start-ScheduledTask -TaskName $taskName
 
-Write-Host "Task '$taskName' registered and started. It also starts automatically at each logon."
+Write-Host "Task '$taskName' registered and started. It also starts automatically at each logon, unlock, and wake from sleep."
 Write-Host "Action executable: $exePath"
